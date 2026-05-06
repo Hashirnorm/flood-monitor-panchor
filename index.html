@@ -3,81 +3,87 @@
 <head>
     <title>Flood Monitor - Sungai Panchor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Montserrat for a cleaner, professional look -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+    <!-- Import Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        body, html { height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background-color: #eef5f9; }
-        
-        .page-container { 
+        /* Force a light blue-ish theme */
+        body, html { 
+            height: auto; 
             min-height: 100vh; 
+            margin: 0; 
+            font-family: 'Open Sans', sans-serif; 
+            background-color: #e3f2fd; /* Light Blue-ish */
+        }
+        
+        /* The container now has massive padding at the bottom */
+        .page-container { 
             display: flex; 
             flex-direction: column; 
-            padding: 40px 10% 60px 10%; /* Added 60px at the bottom for spacing */
+            padding: 40px 10% 100px 10%; /* 100px space at the bottom */
             box-sizing: border-box; 
         }
         
-        /* Themed Droplet Header */
+        /* Rounded Droplet Header with themed font */
         .header { 
             text-align: center; 
-            background: linear-gradient(180deg, #ffffff 0%, #f0faff 100%);
-            border: 3px solid #2980b9; /* Themed Blue Border */
-            padding: 30px;
-            margin-bottom: 40px;
-            border-radius: 80px 80px 40px 40px; /* More "Round-y" Droplet Shape */
-            box-shadow: 0px 15px 30px rgba(41, 128, 185, 0.1);
+            background: #ffffff;
+            border: 4px solid #1976d2; 
+            padding: 40px;
+            margin-bottom: 50px;
+            border-radius: 100px 100px 30px 30px; 
+            box-shadow: 0px 15px 25px rgba(0,0,0,0.1);
         }
         .header h1 { 
             margin: 0; 
-            font-size: 3rem; 
-            color: #2c3e50; 
+            font-family: 'Montserrat', 'Arial Black', sans-serif; /* Themed Font */
+            font-size: 3.2rem; 
+            color: #0d47a1; 
             font-weight: 900; 
-            letter-spacing: -1px;
             text-transform: uppercase;
         }
         .header p { 
-            margin: 10px 0 0; 
-            color: #3498db; 
+            margin-top: 10px;
             font-weight: 700; 
-            letter-spacing: 4px; 
-            font-size: 1.1rem;
+            color: #1e88e5; 
+            letter-spacing: 5px;
         }
 
+        /* The Grid has a bottom margin for safety */
         .dashboard-main { 
-            flex: 1; 
             display: grid; 
-            grid-template-columns: 1.2fr 0.6fr 1fr; 
-            grid-template-rows: 1.2fr 0.8fr; 
+            grid-template-columns: 1fr 0.5fr 1fr; 
+            grid-template-rows: auto auto; 
             gap: 30px; 
+            margin-bottom: 50px; 
         }
         
         .card { 
             background: white; 
-            border-radius: 25px; 
-            padding: 25px; 
+            border-radius: 30px; 
+            padding: 30px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            border: 1px solid rgba(41, 128, 185, 0.2);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            box-shadow: 0 12px 24px rgba(0,0,0,0.06); 
+            border: 1px solid #bbdefb;
         }
 
-        .buzzer-title { font-size: 0.8rem; font-weight: 900; color: #95a5a6; text-transform: uppercase; margin-bottom: 10px; }
+        /* LED Styling */
+        .led { width: 50px; height: 50px; border-radius: 50%; background: #eceff1; border: 2px solid #cfd8dc; margin: 15px 0; }
+        .water-green { background: #4caf50; box-shadow: 0 0 15px #4caf50; }
+        .water-yellow { background: #ffeb3b; box-shadow: 0 0 15px #ffeb3b; }
+        .water-red { background: #f44336; box-shadow: 0 0 15px #f44336; }
+        .power-blue.active { background: #2196f3; box-shadow: 0 0 15px #2196f3; }
+        .tilt-orange.active { background: #ff9800; box-shadow: 0 0 15px #ff9800; }
 
-        /* LED Styles */
-        .led { width: 45px; height: 45px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; transition: 0.5s; margin: 15px auto; }
-        .water-green { background: #27ae60; box-shadow: 0 0 20px rgba(39, 174, 96, 0.5); }
-        .water-yellow { background: #f1c40f; box-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
-        .water-red { background: #e74c3c; box-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
-        .power-blue.active { background: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
-        .tilt-orange.active { background: #e67e22; box-shadow: 0 0 20px rgba(230, 126, 34, 0.5); }
-
-        .value-big { font-size: 5rem; font-weight: 900; color: #2c3e50; font-family: 'Roboto', sans-serif; }
-        .chart-container { grid-column: 1 / 3; min-height: 300px; }
+        .value-big { font-size: 5.5rem; font-weight: 900; color: #1a237e; }
+        .chart-container { grid-column: 1 / 3; min-height: 350px; }
         
-        .info-data { font-size: 2rem; font-weight: 900; margin-top: 15px; color: #2c3e50; }
+        .info-label { font-size: 0.8rem; font-weight: 800; color: #546e7a; text-transform: uppercase; }
+        .info-data { font-size: 2.2rem; font-weight: 900; margin-top: 10px; color: #263238; }
     </style>
 </head>
 <body>
@@ -89,69 +95,61 @@
     </div>
 
     <div class="dashboard-main">
-        <!-- Water Level Card -->
         <div class="card">
-            <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d; text-transform: uppercase;">Water Level Depth</span>
+            <span class="info-label">Water Level</span>
             <div class="value-big" id="distText">--</div>
-            <span style="font-size: 1.2rem; font-weight: 700; color: #3498db;">CM</span>
+            <span style="font-weight: 900; color: #1976d2;">CM</span>
         </div>
 
-        <!-- LEDs Card -->
         <div class="card">
             <div id="ledWater" class="led"></div>
             <div id="ledPower" class="led"></div>
             <div id="ledTilt" class="led"></div>
         </div>
 
-        <!-- Alert Card -->
-        <div class="card" style="padding: 15px;">
-            <div class="buzzer-title">Alert Status</div>
-            <div id="alarmBox" style="display:none; color: #e74c3c; text-align:center;">
-                <span style="font-size: 40px;">⚠️</span><br><b style="font-size: 1.2rem;">LEVEL CRITICAL</b>
+        <div class="card" style="padding: 20px;">
+            <span class="info-label">Alert Status</span>
+            <div id="alarmBox" style="display:none; color: #d32f2f; text-align:center;">
+                <span style="font-size: 45px;">🚨</span><br><b>DANGER</b>
             </div>
-            <div id="safeBox" style="color: #27ae60; text-align:center;">
-                <span style="font-size: 40px;">✅</span><br><b style="font-size: 1.2rem;">SYSTEM STABLE</b>
+            <div id="safeBox" style="color: #388e3c; text-align:center;">
+                <span style="font-size: 45px;">✅</span><br><b>STABLE</b>
             </div>
         </div>
 
-        <!-- Live Chart Card -->
         <div class="card chart-container">
             <div id="chartContainer" style="height: 100%; width: 100%;"></div>
         </div>
 
-        <!-- Sensor Sidebars -->
         <div style="display: flex; flex-direction: column; gap: 30px;">
             <div class="card" style="flex: 1;">
-                <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d;">STRUCTURAL TILT</span>
-                <div id="tiltVal" class="info-data" style="color: #e67e22;">X:0 Y:0</div>
+                <span class="info-label">Structural Tilt</span>
+                <div id="tiltVal" class="info-data" style="color: #ef6c00;">X:0 Y:0</div>
             </div>
             <div class="card" style="flex: 1;">
-                <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d;">WEATHER STATUS</span>
-                <div id="rainVal" class="info-data" style="color: #2980b9;">-</div>
+                <span class="info-label">Weather</span>
+                <div id="rainVal" class="info-data" style="color: #0277bd;">-</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Keep your existing MQTT Script here (with your credentials)
+// Use your existing MQTT credentials here
 const broker = 'wss://00a99857651149babfcbd12d2e5e285f.s1.eu.hivemq.cloud:8884/mqtt';
 const options = {
-    clientId: 'Web_Panchor_' + Math.random().toString(16).substr(2, 8),
+    clientId: 'WebClient_' + Math.random().toString(16).substr(2, 8),
     username: 'Hashir_Normazli',
     password: 'Hashir.2807' 
 };
 
 const client = mqtt.connect(broker, options);
-
 var dps = []; 
 var chart = new CanvasJS.Chart("chartContainer", {
     backgroundColor: "transparent",
-    animationEnabled: true,
     theme: "light2",
-    axisY: { title: "Depth (cm)", includeZero: true, maximum: 100, titleFontFamily: "Montserrat" },
-    axisX: { labelFontFamily: "Montserrat" },
-    data: [{ type: "splineArea", color: "rgba(52, 152, 219, 0.2)", lineColor: "#2980b9", dataPoints: dps }]
+    axisY: { title: "Depth (cm)", includeZero: true, maximum: 100 },
+    data: [{ type: "splineArea", color: "rgba(33, 150, 243, 0.1)", lineColor: "#1976d2", dataPoints: dps }]
 });
 
 client.on('connect', () => { client.subscribe('unimap/flood/data'); });
@@ -169,16 +167,9 @@ client.on('message', (topic, message) => {
     const safe = document.getElementById("safeBox");
 
     waterLed.className = "led";
-    if (data.dist > 40) {
-        waterLed.classList.add("water-green");
-        alarm.style.display = "none"; safe.style.display = "block";
-    } else if (data.dist >= 30) {
-        waterLed.classList.add("water-yellow");
-        alarm.style.display = "none"; safe.style.display = "block";
-    } else {
-        waterLed.classList.add("water-red");
-        alarm.style.display = "block"; safe.style.display = "none";
-    }
+    if (data.dist > 40) { waterLed.classList.add("water-green"); alarm.style.display="none"; safe.style.display="block"; }
+    else if (data.dist >= 30) { waterLed.classList.add("water-yellow"); alarm.style.display="none"; safe.style.display="block"; }
+    else { waterLed.classList.add("water-red"); alarm.style.display="block"; safe.style.display="none"; }
 
     if (data.dist >= 20.0) powerLed.className = "led active power-blue";
     else powerLed.className = "led";
