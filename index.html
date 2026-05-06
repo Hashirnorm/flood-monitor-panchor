@@ -3,127 +3,130 @@
 <head>
     <title>Flood Monitor - Sungai Panchor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Montserrat for a cleaner, professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto:wght@400;900&display=swap" rel="stylesheet">
     <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        /* Light Blue Theme Background */
-        body, html { height: 100%; margin: 0; font-family: 'Roboto', sans-serif; background-color: #eef5f9; }
+        body, html { height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background-color: #eef5f9; }
         
-        /* Layout Spacing (Margins on Left/Right) */
         .page-container { 
-            height: 100vh; 
+            min-height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            padding: 40px 10%; 
+            padding: 40px 10% 60px 10%; /* Added 60px at the bottom for spacing */
             box-sizing: border-box; 
         }
         
-        /* Water Droplet Shaped Header */
+        /* Themed Droplet Header */
         .header { 
             text-align: center; 
-            background: #ffffff;
-            border: 3px solid #333;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 50% 50% 50% 50% / 15px 15px 15px 15px; /* Slight droplet rounding */
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.05);
+            background: linear-gradient(180deg, #ffffff 0%, #f0faff 100%);
+            border: 3px solid #2980b9; /* Themed Blue Border */
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 80px 80px 40px 40px; /* More "Round-y" Droplet Shape */
+            box-shadow: 0px 15px 30px rgba(41, 128, 185, 0.1);
         }
-        .header h1 { margin: 0; font-size: 2.8rem; color: #2c3e50; font-weight: 900; }
-        .header p { margin: 5px 0 0; color: #3498db; font-weight: 700; letter-spacing: 2px; }
+        .header h1 { 
+            margin: 0; 
+            font-size: 3rem; 
+            color: #2c3e50; 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+        .header p { 
+            margin: 10px 0 0; 
+            color: #3498db; 
+            font-weight: 700; 
+            letter-spacing: 4px; 
+            font-size: 1.1rem;
+        }
 
         .dashboard-main { 
             flex: 1; 
             display: grid; 
             grid-template-columns: 1.2fr 0.6fr 1fr; 
             grid-template-rows: 1.2fr 0.8fr; 
-            gap: 25px; 
+            gap: 30px; 
         }
         
         .card { 
             background: white; 
-            border-radius: 20px; 
-            padding: 20px; 
+            border-radius: 25px; 
+            padding: 25px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            border: 2px solid #d1d9e6;
-            box-shadow: 5px 5px 15px #c8d0d9; 
+            border: 1px solid rgba(41, 128, 185, 0.2);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
         }
 
-        /* Buzzer Box - Smaller & Professional */
-        .buzzer-card { 
-            padding: 10px; 
-            background: #fff;
-        }
-        .buzzer-title { font-size: 0.7rem; font-weight: 900; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; }
+        .buzzer-title { font-size: 0.8rem; font-weight: 900; color: #95a5a6; text-transform: uppercase; margin-bottom: 10px; }
 
-        /* Bigger Sensor Boxes */
-        .sensor-card-big { flex: 1.5; padding: 25px; }
-        
         /* LED Styles */
-        .led { width: 40px; height: 40px; border-radius: 50%; background: #eee; border: 2px solid #ccc; transition: 0.3s; margin: 10px auto; }
-        .water-green { background: #2ecc71; box-shadow: 0 0 15px #2ecc71; }
-        .water-yellow { background: #f1c40f; box-shadow: 0 0 15px #f1c40f; }
-        .water-red { background: #e74c3c; box-shadow: 0 0 15px #e74c3c; }
-        .power-blue.active { background: #3498db; box-shadow: 0 0 15px #3498db; }
-        .tilt-orange.active { background: #e67e22; box-shadow: 0 0 15px #e67e22; }
+        .led { width: 45px; height: 45px; border-radius: 50%; background: #dfe6e9; border: 2px solid #b2bec3; transition: 0.5s; margin: 15px auto; }
+        .water-green { background: #27ae60; box-shadow: 0 0 20px rgba(39, 174, 96, 0.5); }
+        .water-yellow { background: #f1c40f; box-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
+        .water-red { background: #e74c3c; box-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
+        .power-blue.active { background: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
+        .tilt-orange.active { background: #e67e22; box-shadow: 0 0 20px rgba(230, 126, 34, 0.5); }
 
-        .value-big { font-size: 4.5rem; font-weight: 900; color: #2c3e50; }
-        .chart-container { grid-column: 1 / 3; }
+        .value-big { font-size: 5rem; font-weight: 900; color: #2c3e50; font-family: 'Roboto', sans-serif; }
+        .chart-container { grid-column: 1 / 3; min-height: 300px; }
         
-        .status-text { font-weight: 900; font-size: 1rem; text-align: center; }
-        .info-data { font-size: 1.8rem; font-weight: 900; margin-top: 10px; }
+        .info-data { font-size: 2rem; font-weight: 900; margin-top: 15px; color: #2c3e50; }
     </style>
 </head>
 <body>
 
 <div class="page-container">
     <div class="header">
-        <h1>FLOOD MONITORING SYSTEM</h1>
-        <p>Sungai Panchor, Perak</p>
+        <h1>FLOOD MONITORING</h1>
+        <p>SUNGAI PANCHOR, PERAK</p>
     </div>
 
     <div class="dashboard-main">
-        <!-- Water Level -->
+        <!-- Water Level Card -->
         <div class="card">
-            <span style="font-size: 14px; font-weight: bold; color: #7f8c8d;">WATER LEVEL</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d; text-transform: uppercase;">Water Level Depth</span>
             <div class="value-big" id="distText">--</div>
-            <span style="font-size: 1.2rem; font-weight: bold; color: #bdc3c7;">CENTIMETERS</span>
+            <span style="font-size: 1.2rem; font-weight: 700; color: #3498db;">CM</span>
         </div>
 
-        <!-- LEDs -->
+        <!-- LEDs Card -->
         <div class="card">
             <div id="ledWater" class="led"></div>
             <div id="ledPower" class="led"></div>
             <div id="ledTilt" class="led"></div>
         </div>
 
-        <!-- Professional Buzzer Box -->
-        <div class="card buzzer-card">
+        <!-- Alert Card -->
+        <div class="card" style="padding: 15px;">
             <div class="buzzer-title">Alert Status</div>
             <div id="alarmBox" style="display:none; color: #e74c3c; text-align:center;">
-                <span style="font-size: 30px;">⚠️</span><br><b>CRITICAL: LEVEL HIGH</b>
+                <span style="font-size: 40px;">⚠️</span><br><b style="font-size: 1.2rem;">LEVEL CRITICAL</b>
             </div>
             <div id="safeBox" style="color: #27ae60; text-align:center;">
-                <span style="font-size: 30px;">✅</span><br><b>NOMINAL OPERATIONS</b>
+                <span style="font-size: 40px;">✅</span><br><b style="font-size: 1.2rem;">SYSTEM STABLE</b>
             </div>
         </div>
 
-        <!-- Live Chart -->
+        <!-- Live Chart Card -->
         <div class="card chart-container">
             <div id="chartContainer" style="height: 100%; width: 100%;"></div>
         </div>
 
-        <!-- Larger Sensor Data Boxes -->
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div class="card sensor-card-big" style="background: linear-gradient(145deg, #ffffff, #f0f4f8);">
+        <!-- Sensor Sidebars -->
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+            <div class="card" style="flex: 1;">
                 <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d;">STRUCTURAL TILT</span>
                 <div id="tiltVal" class="info-data" style="color: #e67e22;">X:0 Y:0</div>
             </div>
-            <div class="card sensor-card-big" style="background: linear-gradient(145deg, #ffffff, #f0f4f8);">
-                <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d;">PRECIPITATION STATUS</span>
+            <div class="card" style="flex: 1;">
+                <span style="font-size: 0.9rem; font-weight: 700; color: #7f8c8d;">WEATHER STATUS</span>
                 <div id="rainVal" class="info-data" style="color: #2980b9;">-</div>
             </div>
         </div>
@@ -131,6 +134,7 @@
 </div>
 
 <script>
+// Keep your existing MQTT Script here (with your credentials)
 const broker = 'wss://00a99857651149babfcbd12d2e5e285f.s1.eu.hivemq.cloud:8884/mqtt';
 const options = {
     clientId: 'Web_Panchor_' + Math.random().toString(16).substr(2, 8),
@@ -143,8 +147,10 @@ const client = mqtt.connect(broker, options);
 var dps = []; 
 var chart = new CanvasJS.Chart("chartContainer", {
     backgroundColor: "transparent",
+    animationEnabled: true,
     theme: "light2",
-    axisY: { title: "Level (cm)", includeZero: true, maximum: 100 },
+    axisY: { title: "Depth (cm)", includeZero: true, maximum: 100, titleFontFamily: "Montserrat" },
+    axisX: { labelFontFamily: "Montserrat" },
     data: [{ type: "splineArea", color: "rgba(52, 152, 219, 0.2)", lineColor: "#2980b9", dataPoints: dps }]
 });
 
@@ -153,7 +159,7 @@ client.on('connect', () => { client.subscribe('unimap/flood/data'); });
 client.on('message', (topic, message) => {
     const data = JSON.parse(message.toString());
     document.getElementById("distText").innerText = Math.round(data.dist);
-    document.getElementById("tiltVal").innerText = `X:${data.tiltX} Y:${data.tiltY}`;
+    document.getElementById("tiltVal").innerText = `X:${Math.round(data.tiltX)} Y:${Math.round(data.tiltY)}`;
     document.getElementById("rainVal").innerText = data.rain;
 
     const waterLed = document.getElementById("ledWater");
@@ -162,7 +168,6 @@ client.on('message', (topic, message) => {
     const alarm = document.getElementById("alarmBox");
     const safe = document.getElementById("safeBox");
 
-    // Logic updates
     waterLed.className = "led";
     if (data.dist > 40) {
         waterLed.classList.add("water-green");
