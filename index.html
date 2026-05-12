@@ -64,7 +64,7 @@
 
     <div class="dashboard-main">
         <div class="card">
-            <span class="info-label">Water Level Distance</span>
+            <span class="info-label">Current Distance</span>
             <div class="value-big" id="distText">--</div>
             <span style="font-weight: 900; color: #1976d2; font-size: 1.1rem;">CM</span>
         </div>
@@ -122,16 +122,20 @@ var chart = new CanvasJS.Chart("chartContainer", {
     animationEnabled: true,
     theme: "light2",
     axisY: { 
-        title: "Water Depth (from bottom)", 
+        title: "Distance (0cm = Top, 30cm = Bottom)", 
         minimum: 0, 
         maximum: 30,
-        labelFormatter: function(e){ return e.value + " cm"; }
+        interval: 10,
+        // THIS INVERTS THE LABELS ONLY
+        labelFormatter: function(e){
+            return (30 - e.value) + " cm";
+        }
     },
     data: [{ 
         type: "splineArea", 
         color: "rgba(33, 150, 243, 0.6)", 
         lineColor: "#1976d2", 
-        markerSize: 5,
+        markerSize: 0,
         dataPoints: dps 
     }]
 });
@@ -141,7 +145,6 @@ client.on('connect', () => { client.subscribe('unimap/flood/data'); });
 client.on('message', (topic, message) => {
     const data = JSON.parse(message.toString());
     
-    // UI Updates
     document.getElementById("distText").innerText = Math.round(data.dist);
     document.getElementById("tiltVal").innerHTML = `X:${Math.round(data.tiltX)}<br>Y:${Math.round(data.tiltY)}`;
     document.getElementById("rainVal").innerText = data.rain;
@@ -155,7 +158,6 @@ client.on('message', (topic, message) => {
 
     waterLed.className = "led";
     
-    // Thresholds match your IDE (8cm / 15cm distance)
     if (data.dist > 15) { 
         waterLed.classList.add("water-green"); 
         alarm.style.display="none"; safe.style.display="block"; 
@@ -175,12 +177,11 @@ client.on('message', (topic, message) => {
     if (Math.abs(data.tiltX) > 15 || Math.abs(data.tiltY) > 15) tiltLed.className = "led active tilt-orange";
     else tiltLed.className = "led";
 
-    // MATH FOR THE INVERTED SHADE: 
-    // Total container height (30) - current distance = actual water depth
-    let waterDepth = 30 - data.dist;
-    if(waterDepth < 0) waterDepth = 0; // Guard against sensor glitches
+    // Fills area from bottom, but label logic will make it look correct
+    let visualValue = 30 - data.dist;
+    if(visualValue < 0) visualValue = 0;
 
-    dps.push({x: new Date(), y: waterDepth});
+    dps.push({x: new Date(), y: visualValue});
     if (dps.length > 20) dps.shift();
     chart.render();
 });
