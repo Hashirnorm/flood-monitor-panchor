@@ -15,36 +15,47 @@
         .header h1 { margin: 0; font-family: 'Montserrat', sans-serif; font-size: 3.5rem; color: #0d47a1; font-weight: 900; text-transform: uppercase; }
         .header p { margin-top: 10px; font-weight: 700; color: #1e88e5; letter-spacing: 5px; font-size: 1.1rem; }
 
-        /* Grid Layout */
-        .dashboard-main { display: grid; grid-template-columns: 1.2fr 0.6fr 1.2fr; gap: 30px; }
-        .card { background: white; border-radius: 30px; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(0,0,0,0.06); border: 1px solid #bbdefb; text-align: center; }
+        /* MAIN GRID CONFIGURATION */
+        .dashboard-main { 
+            display: grid; 
+            grid-template-columns: 1fr 0.5fr 1fr; /* Defines the 3 main columns */
+            gap: 25px; 
+        }
 
-        /* Right Side Layout Column */
-        .sensor-column { display: grid; grid-template-rows: 1fr 1fr; gap: 20px; }
-        .sensor-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { 
+            background: white; border-radius: 30px; padding: 25px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            box-shadow: 0 12px 24px rgba(0,0,0,0.06); border: 1px solid #bbdefb; text-align: center; 
+        }
 
-        /* LEDs */
-        .led-group { display: flex; flex-direction: column; gap: 15px; }
+        /* Small Card Grid (For Buzzer/Tilt and Rain sensors) */
+        .small-card-pair { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; 
+        }
+
+        /* LED Styling */
+        .led-group { display: flex; flex-direction: column; gap: 10px; }
         .led-item { display: flex; flex-direction: column; align-items: center; }
-        .led { width: 40px; height: 40px; border-radius: 50%; background: #f1f1f1; border: 2px solid #ddd; transition: 0.3s; }
-        .led-label { font-size: 0.65rem; font-weight: 800; color: #78909c; text-transform: uppercase; margin-top: 5px; }
+        .led { width: 35px; height: 35px; border-radius: 50%; background: #f1f1f1; border: 2px solid #ddd; transition: 0.3s; }
+        .led-label { font-size: 0.6rem; font-weight: 800; color: #78909c; text-transform: uppercase; margin-top: 4px; }
         
-        /* LED Glows */
-        .water-green { background: #4caf50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.6); }
-        .water-yellow { background: #ffeb3b; box-shadow: 0 0 15px rgba(255, 235, 59, 0.8); }
-        .water-red { background: #f44336; box-shadow: 0 0 15px rgba(244, 67, 54, 0.6); }
-        .power-blue.active { background: #2196f3; box-shadow: 0 0 15px rgba(33, 150, 243, 0.6); }
-        .tilt-orange.active { background: #ff9800; box-shadow: 0 0 15px rgba(255, 152, 0, 0.6); }
+        /* LED Colors */
+        .water-green { background: #4caf50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.5); }
+        .water-yellow { background: #ffeb3b; box-shadow: 0 0 15px rgba(255, 235, 59, 0.6); }
+        .water-red { background: #f44336; box-shadow: 0 0 15px rgba(244, 67, 54, 0.5); }
+        .power-blue.active { background: #2196f3; box-shadow: 0 0 15px rgba(33, 150, 243, 0.5); }
+        .tilt-orange.active { background: #ff9800; box-shadow: 0 0 15px rgba(255, 152, 0, 0.5); }
 
-        .value-big { font-size: 5.5rem; font-weight: 900; color: #1a237e; }
-        .info-label { font-size: 0.75rem; font-weight: 800; color: #546e7a; text-transform: uppercase; margin-bottom: 5px;}
-        .info-data { font-size: 1.8rem; font-weight: 900; color: #263238; }
-        .chart-container { grid-column: 1 / 3; min-height: 350px; }
+        .value-big { font-size: 5rem; font-weight: 900; color: #1a237e; }
+        .info-label { font-size: 0.7rem; font-weight: 800; color: #546e7a; text-transform: uppercase; margin-bottom: 5px;}
+        .info-data { font-size: 1.6rem; font-weight: 900; color: #263238; }
+        
+        /* Alignment Helpers */
+        .chart-box { grid-column: 1 / 3; min-height: 350px; }
 
         @media only screen and (max-width: 1024px) {
             .dashboard-main { grid-template-columns: 1fr; }
-            .chart-container { grid-column: 1; }
-            .header h1 { font-size: 2rem; }
+            .chart-box { grid-column: 1; }
         }
     </style>
 </head>
@@ -57,67 +68,59 @@
     </div>
 
     <div class="dashboard-main">
-        <!-- Water Level -->
+        <!-- TOP ROW ALIGNMENT -->
+        <!-- Water Level (Left) -->
         <div class="card">
             <span class="info-label">Water Level Depth</span>
             <div class="value-big" id="distText">--</div>
-            <span style="font-weight: 900; color: #1976d2; font-size: 1.2rem;">CM</span>
+            <span style="font-weight: 900; color: #1976d2; font-size: 1.1rem;">CM</span>
         </div>
 
-        <!-- LEDs -->
+        <!-- LEDs (Center) -->
         <div class="card">
             <div class="led-group">
-                <div class="led-item">
-                    <div id="ledWater" class="led"></div>
-                    <span class="led-label">Water Level</span>
-                </div>
-                <div class="led-item">
-                    <div id="ledPower" class="led"></div>
-                    <span class="led-label">Power Source</span>
-                </div>
-                <div class="led-item">
-                    <div id="ledTilt" class="led"></div>
-                    <span class="led-label">Tilt Sensor</span>
-                </div>
+                <div class="led-item"><div id="ledWater" class="led"></div><span class="led-label">Water</span></div>
+                <div class="led-item"><div id="ledPower" class="led"></div><span class="led-label">Power</span></div>
+                <div class="led-item"><div id="ledTilt" class="led"></div><span class="led-label">Tilt</span></div>
             </div>
         </div>
 
-        <!-- Right Side Sensors -->
-        <div class="sensor-column">
-            <!-- Upper Half: Buzzer & Tilt -->
-            <div class="sensor-subgrid">
-                <div class="card">
-                    <span class="info-label">Alert Status</span>
-                    <div id="alarmBox" style="display:none; color: #d32f2f;">🚨 <b>DANGER</b></div>
-                    <div id="safeBox" style="color: #388e3c;">✅ <b>STABLE</b></div>
-                </div>
-                <div class="card">
-                    <span class="info-label">Tilt Sensor</span>
-                    <div id="tiltVal" class="info-data" style="color: #ef6c00;">X:0 Y:0</div>
-                </div>
+        <!-- Buzzer & Tilt (Right) - Aligned with Water Level -->
+        <div class="small-card-pair">
+            <div class="card">
+                <span class="info-label">Alert Status</span>
+                <div id="alarmBox" style="display:none; color: #d32f2f;"><span style="font-size:1.5rem;">🚨</span><br><b>DANGER</b></div>
+                <div id="safeBox" style="color: #388e3c;"><span style="font-size:1.5rem;">✅</span><br><b>STABLE</b></div>
             </div>
-            <!-- Lower Half: Rain Value & Rain Status -->
-            <div class="sensor-subgrid">
-                <div class="card">
-                    <span class="info-label">Rain Intensity</span>
-                    <div id="rainInt" class="info-data" style="color: #1565c0;">0</div>
-                    <span style="font-size: 0.7rem; font-weight: bold; color: #90a4ae;">RAW</span>
-                </div>
-                <div class="card">
-                    <span class="info-label">Weather Condition</span>
-                    <div id="rainVal" class="info-data" style="color: #0277bd;">-</div>
-                </div>
+            <div class="card">
+                <span class="info-label">Tilt Sensor</span>
+                <div id="tiltVal" class="info-data" style="color: #ef6c00;">X:0<br>Y:0</div>
             </div>
         </div>
 
-        <!-- Wave Chart -->
-        <div class="card chart-container">
+        <!-- BOTTOM ROW ALIGNMENT -->
+        <!-- Wave Chart (Left + Center Span) -->
+        <div class="card chart-box">
             <div id="chartContainer" style="height: 100%; width: 100%;"></div>
+        </div>
+
+        <!-- Rain Status & Intensity (Right) - Aligned with Chart -->
+        <div class="small-card-pair">
+            <div class="card">
+                <span class="info-label">Rain Intensity</span>
+                <div id="rainInt" class="info-data" style="color: #1565c0;">0</div>
+                <span style="font-size: 0.6rem; font-weight: bold; color: #90a4ae;">ANALOG</span>
+            </div>
+            <div class="card">
+                <span class="info-label">Condition</span>
+                <div id="rainVal" class="info-data" style="color: #0277bd; font-size: 1.2rem;">-</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+// MQTT & Chart logic stays the same to ensure functionality
 const broker = 'wss://00a99857651149babfcbd12d2e5e285f.s1.eu.hivemq.cloud:8884/mqtt';
 const options = {
     clientId: 'Web_Panchor_' + Math.random().toString(16).substr(2, 8),
@@ -132,29 +135,17 @@ var chart = new CanvasJS.Chart("chartContainer", {
     animationEnabled: true,
     theme: "light2",
     axisY: { title: "Depth (cm)", includeZero: true, maximum: 100 },
-    data: [{ 
-        type: "splineArea", 
-        color: "rgba(33, 150, 243, 0.15)", 
-        lineColor: "#1976d2", 
-        dataPoints: dps 
-    }]
+    data: [{ type: "splineArea", color: "rgba(33, 150, 243, 0.15)", lineColor: "#1976d2", dataPoints: dps }]
 });
 
 client.on('connect', () => { client.subscribe('unimap/flood/data'); });
 
 client.on('message', (topic, message) => {
     const data = JSON.parse(message.toString());
-    
-    // 1. Chart Inversion Logic:
-    // Simply push data.dist as the Y value. 
-    // Higher depth = Higher chart peak.
     document.getElementById("distText").innerText = Math.round(data.dist);
-    dps.push({x: new Date(), y: data.dist}); 
-    
-    // Other values
-    document.getElementById("tiltVal").innerText = `X:${Math.round(data.tiltX)} Y:${Math.round(data.tiltY)}`;
+    document.getElementById("tiltVal").innerHTML = `X:${Math.round(data.tiltX)}<br>Y:${Math.round(data.tiltY)}`;
     document.getElementById("rainVal").innerText = data.rain;
-    document.getElementById("rainInt").innerText = data.rainVal || 0; // Update with intensity key
+    document.getElementById("rainInt").innerText = data.rainVal || 0;
 
     const waterLed = document.getElementById("ledWater");
     const powerLed = document.getElementById("ledPower");
@@ -163,16 +154,9 @@ client.on('message', (topic, message) => {
     const safe = document.getElementById("safeBox");
 
     waterLed.className = "led";
-    if (data.dist > 40) { 
-        waterLed.classList.add("water-green"); 
-        alarm.style.display="none"; safe.style.display="block"; 
-    } else if (data.dist >= 30) { 
-        waterLed.classList.add("water-yellow"); 
-        alarm.style.display="none"; safe.style.display="block"; 
-    } else { 
-        waterLed.classList.add("water-red"); 
-        alarm.style.display="block"; safe.style.display="none"; 
-    }
+    if (data.dist > 40) { waterLed.classList.add("water-green"); alarm.style.display="none"; safe.style.display="block"; }
+    else if (data.dist >= 30) { waterLed.classList.add("water-yellow"); alarm.style.display="none"; safe.style.display="block"; }
+    else { waterLed.classList.add("water-red"); alarm.style.display="block"; safe.style.display="none"; }
 
     if (data.dist >= 20.0) powerLed.className = "led active power-blue";
     else powerLed.className = "led";
@@ -180,6 +164,7 @@ client.on('message', (topic, message) => {
     if (Math.abs(data.tiltX) > 15 || Math.abs(data.tiltY) > 15) tiltLed.className = "led active tilt-orange";
     else tiltLed.className = "led";
 
+    dps.push({x: new Date(), y: data.dist});
     if (dps.length > 20) dps.shift();
     chart.render();
 });
